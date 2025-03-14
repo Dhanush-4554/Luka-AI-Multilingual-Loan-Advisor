@@ -106,7 +106,7 @@ export async function translateText(
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'api-subscription-key': apiKey,
+                'api-subscription-key': '05ca5a88-9265-4e62-a25a-507687a900d3',
             },
             body: JSON.stringify(requestBody),
         });
