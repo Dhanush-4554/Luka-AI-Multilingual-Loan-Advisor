@@ -69,6 +69,12 @@ const Navbar: React.FC = () => {
                         >
                             About
                         </Link>
+                        <Link
+                            href="/loan-chat"
+                            className={`px-4 py-2 rounded-full text-sm font-medium transition-all hover:bg-blue-100/80 ${isScrolled ? 'text-gray-700 hover:text-blue-600' : 'text-white hover:text-blue-800'}`}
+                        >
+                            Loan-ChatBot
+                        </Link>
 
                         <div className="ml-4 flex items-center space-x-3">
                             <Link
