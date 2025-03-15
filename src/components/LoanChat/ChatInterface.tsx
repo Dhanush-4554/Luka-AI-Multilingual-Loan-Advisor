@@ -5,7 +5,7 @@ import { sendChatMessage } from '@/utils/loanChat';
 import { generateTTS } from '@/utils/tts';
 import { LANGUAGES } from '@/components/LoanGuide/data';
 import { transcribeAudio } from '@/utils/stt';
-import { Mic, Headphones, MessageCircle, ChevronDown, ArrowRight, GitBranch, GitCommit, GitPullRequest, LayoutGrid, PieChart, BarChart, List, Box, ChevronLeft } from 'lucide-react';
+import { Mic, Headphones, MessageCircle, ChevronDown, ArrowRight, GitBranch, GitCommit, GitPullRequest, LayoutGrid, PieChart, BarChart, List, Box, ChevronLeft, CheckCircle2 } from 'lucide-react';
 
 // Define and export the Message type
 export type Message = {
@@ -13,11 +13,106 @@ export type Message = {
   sender: 'user' | 'bot';
 };
 
+// Define the loan application stages
+const LOAN_STAGES = [
+  {
+    title: "Information Collection",
+    description: "Basic details and requirements",
+    icon: Box
+  },
+  {
+    title: "Loan Assessment",
+    description: "Evaluating loan options",
+    icon: BarChart
+  },
+  {
+    title: "Final Approval",
+    description: "Loan offer and completion",
+    icon: CheckCircle2
+  }
+];
+
+// Define stage keywords for better detection
+const STAGE_KEYWORDS = {
+  INITIAL: ['name', 'age', 'profession', 'personal', 'details', 'information', 'basic'],
+  ASSESSMENT: ['evaluate', 'income', 'salary', 'credit', 'bank', 'statement', 'documents', 'verify'],
+  APPROVAL: ['approve', 'offer', 'sanction', 'grant', 'confirm', 'congratulation', 'success']
+};
+
+// Define supported language codes
+type LanguageCode = 'hi-IN' | 'kn-IN' | 'te-IN' | 'ta-IN' | 'mr-IN' | 'ml-IN' | 'gu-IN' | 'en-IN';
+
+// Define multilingual greetings
+const GREETINGS: Record<LanguageCode, string> = {
+  'hi-IN': 'नमस्ते! मैं आपका लोन सलाहकार हूं। आपको सही लोन विकल्प जल्दी से खोजने में मदद करने के लिए, मुझे बस आपका नाम, आयु और पेशा जानने की जरूरत है। आपका नाम क्या है?',
+  'kn-IN': 'ನಮಸ್ಕಾರ! ನಾನು ನಿಮ್ಮ ಸಾಲದ ಸಲಹೆಗಾರ. ನಿಮಗೆ ಸರಿಯಾದ ಸಾಲದ ಆಯ್ಕೆಗಳನ್ನು ಶೀಘ್ರವಾಗಿ ಕಂಡುಹಿಡಿಯಲು ಸಹಾಯ ಮಾಡಲು, ನಾನು ನಿಮ್ಮ ಹೆಸರು, ವಯಸ್ಸು ಮತ್ತು ವೃತ್ತಿಯನ್ನು ತಿಳಿಯಬೇಕು. ನಿಮ್ಮ ಹೆಸರೇನು?',
+  'te-IN': 'నమస్కారం! నేను మీ రుణ సలహాదారును. మీకు సరైన రుణ ఎంపికలను త్వరగా కనుగొనడంలో సహాయపడటానికి, నేను మీ పేరు, వయస్సు మరియు వృత్తిని తెలుసుకోవాలి. మీ పేరు ఏమిటి?',
+  'ta-IN': 'வணக்கம்! நான் உங்கள் கடன் ஆலோசகர். உங்களுக்கு சரியான கடன் விருப்பங்களை விரைவாகக் கண்டறிய உதவ, உங்கள் பெயர், வயது மற்றும் தொழில் பற்றி தெரிந்துகொள்ள வேண்டும். உங்கள் பெயர் என்ன?',
+  'mr-IN': 'नमस्कार! मी तुमचा कर्ज सल्लागार आहे. तुम्हाला योग्य कर्ज पर्याय लवकर शोधण्यात मदत करण्यासाठी, मला तुमचे नाव, वय आणि व्यवसाय जाणून घेणे आवश्यक आहे. तुमचे नाव काय आहे?',
+  'ml-IN': 'നമസ്കാരം! ഞാൻ നിങ്ങളുടെ വായ്പാ ഉപദേശകനാണ്. നിങ്ങൾക്ക് ശരിയായ വായ്പാ ഓപ്ഷനുകൾ വേഗത്തിൽ കണ്ടെത്താൻ സഹായിക്കുന്നതിന്, എനിക്ക് നിങ്ങളുടെ പേര്, വയസ്സ്, തൊഴിൽ എന്നിവ അറിയേണ്ടതുണ്ട്. നിങ്ങളുടെ പേര് എന്താണ്?',
+  'gu-IN': 'નમસ્તે! હું તમારો લોન સલાહકાર છું. તમને યોગ્ય લોન વિકલ્પો ઝડપથી શોધવામાં મદદ કરવા માટે, મારે તમારું નામ, ઉંમર અને વ્યવસાય જાણવાની જરૂર છે. તમારું નામ શું છે?',
+  'en-IN': 'Hello! I\'m your loan advisor. To help you find the right loan options quickly, I just need your name, age, and profession to get started. What\'s your name?'
+};
+
+// LoanProgressStepper Component
+const LoanProgressStepper = ({ currentStage }: { currentStage: number }) => {
+  return (
+    <div className="bg-white px-6 py-4 border-b border-gray-200">
+      <div className="max-w-3xl mx-auto">
+        <div className="relative">
+          {/* Progress Line */}
+          <div className="absolute top-1/2 left-0 right-0 h-0.5 bg-gray-200 -translate-y-1/2">
+            <div 
+              className="absolute top-0 left-0 h-full bg-blue-500 transition-all duration-500 ease-out"
+              style={{ width: `${(currentStage / (LOAN_STAGES.length - 1)) * 100}%` }}
+            />
+          </div>
+          
+          {/* Stages */}
+          <div className="relative flex justify-between">
+            {LOAN_STAGES.map((stage, index) => {
+              const StageIcon = stage.icon;
+              const isCompleted = index < currentStage;
+              const isActive = index === currentStage;
+              
+              return (
+                <div key={index} className="flex flex-col items-center relative">
+                  {/* Stage Icon */}
+                  <div className={`relative z-10 flex items-center justify-center w-10 h-10 rounded-full border-2 transition-all duration-300 bg-white ${
+                    isCompleted ? 'border-blue-500 text-blue-500' :
+                    isActive ? 'border-blue-500 text-blue-500' :
+                    'border-gray-300 text-gray-400'
+                  }`}>
+                    <StageIcon className="w-5 h-5" />
+                  </div>
+                  
+                  {/* Stage Content */}
+                  <div className="mt-2 text-center">
+                    <h4 className={`text-sm font-medium ${
+                      isCompleted || isActive ? 'text-blue-600' : 'text-gray-500'
+                    }`}>
+                      {stage.title}
+                    </h4>
+                    <p className="text-xs text-gray-500 mt-1 max-w-[120px]">
+                      {stage.description}
+                    </p>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 export default function ChatInterface() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
   const [selectedLanguage, setSelectedLanguage] = useState<string | null>(null);
   const [isRecording, setIsRecording] = useState(false);
+  const [currentStage, setCurrentStage] = useState(0);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
   const audioContextRef = useRef<AudioContext | null>(null);
@@ -56,7 +151,7 @@ export default function ChatInterface() {
   const startConversation = async () => {
     try {
       setIsProcessing(true);
-      const greeting = `Hello! I'm your loan advisor. To help you find the right loan options quickly, I just need your name, age, and profession to get started. What's your name?`;
+      const greeting = GREETINGS[selectedLanguage as LanguageCode] || GREETINGS['en-IN'];
       setMessages(prev => [...prev, { text: greeting, sender: 'bot' }]);
       await generateTTS(selectedLanguage!, greeting);
       
@@ -131,6 +226,27 @@ export default function ChatInterface() {
     }
   };
 
+  // Enhanced stage update function
+  const updateCurrentStage = (message: string) => {
+    const lowerMessage = message.toLowerCase();
+    
+    // Only allow moving to next stage or staying in current stage
+    let newStage = currentStage;
+    
+    // Check for keywords in each stage
+    if (STAGE_KEYWORDS.ASSESSMENT.some(keyword => lowerMessage.includes(keyword))) {
+      newStage = Math.max(currentStage, 1);
+    } else if (STAGE_KEYWORDS.APPROVAL.some(keyword => lowerMessage.includes(keyword))) {
+      newStage = Math.max(currentStage, 2);
+    }
+    
+    // Update stage with animation
+    if (newStage !== currentStage) {
+      setCurrentStage(newStage);
+    }
+  };
+
+  // Modify processAudio to include stage updates
   const processAudio = async (audioBlob: Blob) => {
     try {
       setIsProcessing(true);
@@ -139,6 +255,7 @@ export default function ChatInterface() {
       if (sttResponse?.transcript) {
         setMessages(prev => [...prev, { text: sttResponse.transcript, sender: 'user' }]);
         await processUserMessage(sttResponse.transcript);
+        updateCurrentStage(sttResponse.transcript);
       }
     } catch (error) {
       console.error('Error processing audio:', error);
@@ -268,12 +385,12 @@ export default function ChatInterface() {
     };
   }, []);
 
-  // Add auto-scroll effect
-  useEffect(() => {
-    if (messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
-    }
-  }, [messages]);
+  // // Add auto-scroll effect
+  // useEffect(() => {
+  //   if (messagesEndRef.current) {
+  //     messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+  //   }
+  // }, [messages]);
 
   // Add new function to process chat history
   const generateVisualization = async () => {
@@ -478,6 +595,9 @@ export default function ChatInterface() {
           </div>
         ) : (
           <>
+            {/* Progress Stepper */}
+            {/* <LoanProgressStepper currentStage={currentStage} /> */}
+
             {/* Chat Messages */}
             <div className="flex-1 overflow-y-auto p-4 bg-gray-50">
               {messages.map((msg, index) => (
