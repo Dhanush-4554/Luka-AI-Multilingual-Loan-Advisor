@@ -171,13 +171,13 @@ const TaxBracket = () => {
               <Label>Tax Regime</Label>
               <div className="grid grid-cols-2 gap-4">
                 <Button 
-                  className={`w-full ${isRegime ? 'bg-finance-600' : 'bg-gray-300 text-gray-700 hover:bg-gray-400'}`}
+                  className={`w-full ${isRegime ? 'bg-blue-600' : 'bg-gray-300 text-gray-700 hover:bg-gray-400'}`}
                   onClick={() => handleRegimeChange(true)}
                 >
                   New Regime
                 </Button>
                 <Button 
-                  className={`w-full ${!isRegime ? 'bg-finance-600' : 'bg-gray-300 text-gray-700 hover:bg-gray-400'}`}
+                  className={`w-full ${!isRegime ? 'bg-blue-600' : 'bg-gray-300 text-gray-700 hover:bg-gray-400'}`}
                   onClick={() => handleRegimeChange(false)}
                 >
                   Old Regime

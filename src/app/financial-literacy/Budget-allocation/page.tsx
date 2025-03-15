@@ -320,7 +320,7 @@ const BudgetAllocation = () => {
                     
                     <Button 
                       variant="outline" 
-                      className="w-full text-sm"
+                      className="w-full text-sm text-white bg-green-400 hover:bg-green-500"
                       onClick={addCategory}
                     >
                       Add Category
