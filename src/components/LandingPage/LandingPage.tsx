@@ -61,10 +61,10 @@ const LandingPage: React.FC = () => {
     };
 
     return (
-        <div className="min-h-screen">
+        <div className="min-h-screen ">
 
             {/* Hero Section */}
-            <section className="relative min-h-screen flex items-center pt-20 pb-20 overflow-hidden">
+            <section className="relative min-h-screen flex items-center pt-40 pb-20 mb-[-100px] overflow-hidden top-[-90px] ">
                 {/* Background gradients and effects */}
                 <div className="absolute inset-0 bg-gradient-to-br from-blue-900 via-indigo-900 to-blue-900 opacity-95"></div>
                 <div className="absolute inset-0 bg-[url('/patterns/grid.svg')] opacity-15"></div>
@@ -207,8 +207,8 @@ const LandingPage: React.FC = () => {
                                     whileHover={{ scale: 1.05 }}
                                     whileTap={{ scale: 0.95 }}
                                 >
-                                    <Link
-                                        href="/get-started"
+                                <Link
+                                    href="/get-started"
                                         className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-medium px-8 py-4 rounded-full transition-all shadow-lg hover:shadow-blue-500/50 flex items-center group relative overflow-hidden"
                                     >
                                         <span className="relative z-10">Get Started</span>
@@ -226,18 +226,18 @@ const LandingPage: React.FC = () => {
                                             }}
                                         >
                                             <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                                                <path fillRule="evenodd" d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z" clipRule="evenodd" />
-                                            </svg>
+                                        <path fillRule="evenodd" d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z" clipRule="evenodd" />
+                                    </svg>
                                         </motion.div>
-                                    </Link>
+                                </Link>
                                 </motion.div>
 
                                 <motion.div
                                     whileHover={{ scale: 1.05 }}
                                     whileTap={{ scale: 0.95 }}
                                 >
-                                    <Link
-                                        href="/demo"
+                                <Link
+                                    href="/demo"
                                         className="bg-white/10 hover:bg-white/15 backdrop-filter backdrop-blur-lg text-white font-medium px-8 py-4 rounded-full border border-white/20 transition-all flex items-center group"
                                     >
                                         <motion.div
@@ -249,11 +249,11 @@ const LandingPage: React.FC = () => {
                                             transition={{ repeat: Infinity, duration: 2 }}
                                         >
                                             <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" viewBox="0 0 20 20" fill="currentColor">
-                                                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clipRule="evenodd" />
-                                            </svg>
+                                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clipRule="evenodd" />
+                                    </svg>
                                         </motion.div>
                                         <span>Watch Demo</span>
-                                    </Link>
+                                </Link>
                                 </motion.div>
                             </motion.div>
 
@@ -481,9 +481,9 @@ const LandingPage: React.FC = () => {
                                         className="flex items-center"
                                     >
                                         <div className="relative flex-grow">
-                                            <input
-                                                type="text"
-                                                placeholder="Type your message..."
+                                        <input
+                                            type="text"
+                                            placeholder="Type your message..."
                                                 className="bg-gray-50 rounded-full py-2.5 px-4 w-full text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 pr-10 border border-gray-200"
                                             />
                                             <motion.div 
@@ -493,9 +493,9 @@ const LandingPage: React.FC = () => {
                                             >
                                                 <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                                                     <path fillRule="evenodd" d="M7 4a3 3 0 016 0v4a3 3 0 11-6 0V4zm4 10.93A7.001 7.001 0 0017 8a1 1 0 10-2 0A5 5 0 015 8a1 1 0 00-2 0 7.001 7.001 0 006 6.93V17H6a1 1 0 100 2h8a1 1 0 100-2h-3v-2.07z" clipRule="evenodd" />
-                                                </svg>
+                                            </svg>
                                             </motion.div>
-                                        </div>
+                                    </div>
                                         <motion.button 
                                             whileHover={{ scale: 1.1 }}
                                             whileTap={{ scale: 0.9 }}
@@ -507,7 +507,7 @@ const LandingPage: React.FC = () => {
                                         </motion.button>
                                     </motion.div>
 
-                                    {/* Language selection pills */}
+                                {/* Language selection pills */}
                                     <motion.div 
                                         initial={{ opacity: 0, y: 10 }}
                                         animate={{ opacity: 1, y: 0 }}
@@ -549,7 +549,7 @@ const LandingPage: React.FC = () => {
                                 </motion.div>
                             </motion.div>
                             </motion.div>
-                        </div>
+                            </div>
                     </div>
             </section>
 
@@ -564,8 +564,8 @@ const LandingPage: React.FC = () => {
                 
                 {/* Grid pattern overlay */}
                 <div className="absolute inset-0 bg-[url('/patterns/grid.svg')] opacity-5"></div>
-                
-                {/* Decorative elements */}
+
+                            {/* Decorative elements */}
                 <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-blue-400 to-transparent opacity-30"></div>
                 <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-indigo-400 to-transparent opacity-30"></div>
 
@@ -691,7 +691,7 @@ const LandingPage: React.FC = () => {
                                                 whileHover={{ opacity: 0.8 }}
                                             ></motion.div>
                                             <div className="absolute top-1/2 left-[35%] transform -translate-y-1/2 w-3 h-3 bg-white rounded-full shadow-lg"></div>
-                                        </div>
+                    </div>
                                         
                                         {/* Control Buttons */}
                                         <div className="flex items-center justify-between">
@@ -725,7 +725,7 @@ const LandingPage: React.FC = () => {
                                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.141 0M1.394 9.393c5.857-5.857 15.355-5.857 21.213 0" />
                                                     </svg>
                                                 </motion.button>
-                                            </div>
+                </div>
                                             
                                             <div className="text-white/90 text-sm font-medium">
                                                 01:23 / 03:45
@@ -739,7 +739,7 @@ const LandingPage: React.FC = () => {
                                                 >
                                                     <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                                                         <path fillRule="evenodd" d="M9.383 3.076A1 1 0 0110 4v12a1 1 0 01-1.707.707L4.586 13H2a1 1 0 01-1-1V8a1 1 0 011-1h2.586l3.707-3.707a1 1 0 011.09-.217zM14.657 2.929a1 1 0 011.414 0A9.972 9.972 0 0119 10a9.972 9.972 0 01-2.929 7.071 1 1 0 01-1.414-1.414A7.971 7.971 0 0017 10c0-2.21-.894-4.208-2.343-5.657a1 1 0 010-1.414zm-2.829 2.828a1 1 0 011.415 0A5.983 5.983 0 0115 10a5.984 5.984 0 01-1.757 4.243 1 1 0 01-1.415-1.415A3.984 3.984 0 0013 10a3.983 3.983 0 00-1.172-2.828 1 1 0 010-1.415z" clipRule="evenodd" />
-                                                    </svg>
+                        </svg>
                                                 </motion.button>
                                                 
                                                 <motion.button 
@@ -808,12 +808,12 @@ const LandingPage: React.FC = () => {
                                             <p className="text-blue-100/70 text-sm mt-1">{chapter.description}</p>
                                         </div>
                                     </div>
-                                </motion.div>
-                            ))}
-                        </div>
                     </motion.div>
-                    
-                   
+                            ))}
+                </div>
+                    </motion.div>
+
+
                 </div>
             </section>
 
@@ -966,7 +966,7 @@ const LandingPage: React.FC = () => {
                                             >
                                                 <i className={`fas fa-${feature.icon} text-2xl`}></i>
                                             </motion.div>
-                                        </div>
+                    </div>
                                     </div>
                                     <h3 className="text-xl font-bold mb-3 text-gray-800 group-hover:text-blue-600 transition-colors duration-300">{feature.title}</h3>
                                     <p className="text-gray-600">{feature.description}</p>
@@ -1043,7 +1043,7 @@ const LandingPage: React.FC = () => {
                     </motion.div>
 
                     <div className="relative">
-                        
+
 
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-10 relative z-10">
                             {[
@@ -1101,7 +1101,7 @@ const LandingPage: React.FC = () => {
                                         />
                                         <div className={`relative bg-gradient-to-r ${step.color} text-white rounded-full w-20 h-20 flex items-center justify-center shadow-lg`}>
                                             <span className="text-2xl font-bold">{step.step}</span>
-                                        </div>
+                                    </div>
                                     </motion.div>
 
                                     {/* Card content */}
@@ -1153,10 +1153,10 @@ const LandingPage: React.FC = () => {
                         </div>
                         
                         {/* Call to action button */}
-                        <motion.div 
-                            initial={{ opacity: 0, y: 20 }}
-                            whileInView={{ opacity: 1, y: 0 }}
-                            viewport={{ once: true }}
+                            <motion.div
+                                initial={{ opacity: 0, y: 20 }}
+                                whileInView={{ opacity: 1, y: 0 }}
+                                viewport={{ once: true }}
                             transition={{ duration: 0.7, delay: 1.2 }}
                             className="mt-16 text-center"
                         >
@@ -1167,7 +1167,7 @@ const LandingPage: React.FC = () => {
                             >
                                 Start Your Journey Now
                             </motion.button>
-                        </motion.div>
+                            </motion.div>
                     </div>
                 </div>
             </section>
