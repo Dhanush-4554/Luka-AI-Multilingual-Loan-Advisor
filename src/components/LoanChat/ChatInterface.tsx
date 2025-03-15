@@ -32,6 +32,7 @@ export default function ChatInterface() {
   const [summaryData, setSummaryData] = useState<any>(null);
   const [isSummaryOpen, setIsSummaryOpen] = useState(false);
   const [isSummarizing, setIsSummarizing] = useState(false);
+  const [currentPhase, setCurrentPhase] = useState<number>(1); // Track conversation phase (1-3)
 
   // Initialize audio context and analyser
   const initAudioContext = () => {
@@ -56,7 +57,7 @@ export default function ChatInterface() {
   const startConversation = async () => {
     try {
       setIsProcessing(true);
-      const greeting = `Hello! I'm your loan advisor. How can I help you today?`;
+      const greeting = `Hello! I'm your loan advisor. To help you find the right loan options quickly, I just need your name, age, and profession to get started. What's your name?`;
       setMessages(prev => [...prev, { text: greeting, sender: 'bot' }]);
       await generateTTS(selectedLanguage!, greeting);
       
@@ -226,6 +227,9 @@ export default function ChatInterface() {
       const response = await sendChatMessage('12345', message, selectedLanguage!);
       setMessages(prev => [...prev, { text: response, sender: 'bot' }]);
       
+      // Detect current phase based on message content
+      detectConversationPhase(response);
+      
       // Calculate new recording duration based on response length
       const newDuration = calculateRecordingDuration(response);
       setRecordingDuration(newDuration);
@@ -238,6 +242,68 @@ export default function ChatInterface() {
       }, 1000); // 1 second delay after TTS
     } catch (error) {
       console.error('Error processing message:', error);
+    }
+  };
+
+  // Add new function to detect the conversation phase
+  const detectConversationPhase = (botResponse: string) => {
+    // Simplified phase detection logic
+    const phaseOneKeywords = ['name', 'age', 'profession', 'occupation', 'what do you do', 'how old'];
+    
+    const phaseTwoKeywords = [
+      'monthly salary', 'income', 'pan card', 'aadhar card', 'aadhaar', 
+      'cibil score', 'credit score', 'bank statements', 'other sources of income', 
+      'documentation', 'financial situation'
+    ];
+    
+    const phaseThreeKeywords = [
+      'what type of loan', 'interested in', 'eligibility', 'eligible', 'not eligible',
+      'qualify', 'loan options', 'interest rate', 'terms', 'application process',
+      'home loan', 'personal loan', 'business loan', 'education loan', 'car loan'
+    ];
+    
+    // Simple keyword matching to estimate current phase
+    const lowerCaseResponse = botResponse.toLowerCase();
+    
+    let phaseOneMatches = 0;
+    let phaseTwoMatches = 0;
+    let phaseThreeMatches = 0;
+    
+    phaseOneKeywords.forEach(keyword => {
+      if (lowerCaseResponse.includes(keyword)) phaseOneMatches++;
+    });
+    
+    phaseTwoKeywords.forEach(keyword => {
+      if (lowerCaseResponse.includes(keyword)) phaseTwoMatches++;
+    });
+    
+    phaseThreeKeywords.forEach(keyword => {
+      if (lowerCaseResponse.includes(keyword)) phaseThreeMatches++;
+    });
+    
+    // Look for direct indicators of phase transition
+    if (lowerCaseResponse.includes("financial situation") || 
+        lowerCaseResponse.includes("monthly salary") || 
+        lowerCaseResponse.includes("now let's talk about your finances")) {
+      setCurrentPhase(2);
+      return;
+    }
+    
+    if (lowerCaseResponse.includes("what type of loan") || 
+        lowerCaseResponse.includes("based on the information") || 
+        lowerCaseResponse.includes("let me check your eligibility") ||
+        lowerCaseResponse.includes("which loan are you interested in")) {
+      setCurrentPhase(3);
+      return;
+    }
+    
+    // Determine the current phase based on keyword matches if no direct indicators
+    if (phaseThreeMatches > phaseTwoMatches && phaseThreeMatches > phaseOneMatches) {
+      setCurrentPhase(3);
+    } else if (phaseTwoMatches > phaseOneMatches) {
+      setCurrentPhase(2);
+    } else {
+      setCurrentPhase(1);
     }
   };
 
@@ -401,7 +467,7 @@ export default function ChatInterface() {
           >
             <ChevronLeft className="w-5 h-5" />
           </button>
-          <h3 className="text-lg font-semibold">Conversation Summary</h3>
+          <h3 className="text-lg font-semibold">Loan Summary</h3>
         </div>
 
         {/* Content */}
@@ -413,28 +479,115 @@ export default function ChatInterface() {
           ) : summaryData ? (
             <>
               {/* Summary Section */}
-              <div className="mb-6">
+              <div className="mb-6 bg-blue-50 p-4 rounded-lg">
                 <h4 className="font-medium text-gray-800 mb-2">Summary</h4>
                 <p className="text-gray-600">{summaryData.summary || 'No summary available'}</p>
               </div>
 
-              {/* Key Points Flow */}
-              <div>
-                <h4 className="font-medium text-gray-800 mb-3">Key Points</h4>
+              {/* Basic Information */}
+              <div className="mb-6 border border-gray-200 rounded-lg p-4">
+                <h4 className="font-medium text-blue-600 mb-3">User Information</h4>
+                <div className="grid grid-cols-3 gap-2">
+                  <div className="bg-gray-50 p-3 rounded">
+                    <span className="block text-xs text-gray-500">Name</span>
+                    <span className="font-medium">{summaryData.basicInfo?.name || 'N/A'}</span>
+                  </div>
+                  <div className="bg-gray-50 p-3 rounded">
+                    <span className="block text-xs text-gray-500">Age</span>
+                    <span className="font-medium">{summaryData.basicInfo?.age || 'N/A'}</span>
+                  </div>
+                  <div className="bg-gray-50 p-3 rounded">
+                    <span className="block text-xs text-gray-500">Profession</span>
+                    <span className="font-medium">{summaryData.basicInfo?.profession || 'N/A'}</span>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Financial Information */}
+              <div className="mb-6 border border-gray-200 rounded-lg p-4">
+                <h4 className="font-medium text-green-600 mb-3">Financial Information</h4>
                 <div className="space-y-2">
-                  {summaryData.keyPoints?.map((point: string, index: number) => (
-                    <div key={index} className="flex items-center gap-2">
-                      <div className="w-8 h-8 flex items-center justify-center bg-blue-50 text-blue-600 rounded-full">
-                        {index + 1}
-                      </div>
-                      <div className="flex-1 p-3 bg-gray-50 rounded-lg">
-                        <span className="text-gray-800">{point}</span>
-                      </div>
-                      {index < (summaryData.keyPoints?.length || 0) - 1 && (
-                        <ArrowRight className="w-5 h-5 text-gray-400 mx-2" />
-                      )}
+                  <div className="bg-gray-50 p-3 rounded">
+                    <span className="block text-xs text-gray-500">Monthly Salary</span>
+                    <span className="font-medium">{summaryData.financialInfo?.monthlySalary || 'Not provided'}</span>
+                  </div>
+                  <div className="bg-gray-50 p-3 rounded">
+                    <span className="block text-xs text-gray-500">ID Cards (PAN/Aadhar)</span>
+                    <span className="font-medium">{summaryData.financialInfo?.hasIdCards || 'Not provided'}</span>
+                  </div>
+                  <div className="bg-gray-50 p-3 rounded">
+                    <span className="block text-xs text-gray-500">CIBIL Score</span>
+                    <span className="font-medium">{summaryData.financialInfo?.cibilScore || 'Not provided'}</span>
+                  </div>
+                  <div className="bg-gray-50 p-3 rounded">
+                    <span className="block text-xs text-gray-500">Bank Statements</span>
+                    <span className="font-medium">{summaryData.financialInfo?.hasBankStatements || 'Not provided'}</span>
+                  </div>
+                  <div className="bg-gray-50 p-3 rounded">
+                    <span className="block text-xs text-gray-500">Other Income Sources</span>
+                    <span className="font-medium">{summaryData.financialInfo?.otherIncomeSources || 'None'}</span>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Loan Eligibility */}
+              <div className="mb-6 border border-gray-200 rounded-lg p-4">
+                <h4 className="font-medium text-indigo-600 mb-3">Loan Eligibility</h4>
+                <div className="space-y-3">
+                  <div className="bg-gray-50 p-3 rounded">
+                    <span className="block text-xs text-gray-500">Loan Type Requested</span>
+                    <span className="font-medium">{summaryData.loanEligibility?.loanTypeRequested || 'Not specified'}</span>
+                  </div>
+                  
+                  <div className="bg-gray-50 p-3 rounded flex items-start">
+                    <span className="block text-xs text-gray-500 w-full">Eligibility Status</span>
+                    <span className={`font-medium px-2 py-1 rounded text-sm ${
+                      summaryData.loanEligibility?.isEligible === 'Yes' 
+                        ? 'bg-green-100 text-green-800' 
+                        : summaryData.loanEligibility?.isEligible === 'Partially'
+                          ? 'bg-yellow-100 text-yellow-800'
+                          : 'bg-red-100 text-red-800'
+                    }`}>
+                      {summaryData.loanEligibility?.isEligible || 'Not determined'}
+                    </span>
+                  </div>
+                  
+                  <div className="bg-gray-50 p-3 rounded">
+                    <span className="block text-xs text-gray-500">Reason</span>
+                    <span className="font-medium">{summaryData.loanEligibility?.eligibilityReason || 'Not provided'}</span>
+                  </div>
+                  
+                  {summaryData.loanEligibility?.suggestedAlternatives && (
+                    <div className="bg-gray-50 p-3 rounded">
+                      <span className="block text-xs text-gray-500">Alternative Options</span>
+                      <span className="font-medium">{summaryData.loanEligibility?.suggestedAlternatives}</span>
                     </div>
-                  ))}
+                  )}
+                </div>
+              </div>
+              
+              {/* Recommendations */}
+              <div className="mb-6 border border-gray-200 rounded-lg p-4">
+                <h4 className="font-medium text-purple-600 mb-3">Loan Recommendations</h4>
+                <ul className="space-y-1">
+                  {summaryData.recommendations?.map((item: string, i: number) => (
+                    <li key={i} className="text-gray-600 flex items-start">
+                      <span className="text-purple-500 mr-2">•</span>
+                      <span>{item}</span>
+                    </li>
+                  )) || <li className="text-gray-400">No recommendations available</li>}
+                </ul>
+              </div>
+              
+              {/* Key Points */}
+              <div className="bg-gray-50 p-4 rounded-lg">
+                <h4 className="font-medium text-gray-800 mb-3">Key Points</h4>
+                <div className="flex flex-wrap gap-2">
+                  {summaryData.keyPoints?.map((point: string, index: number) => (
+                    <span key={index} className="bg-blue-100 text-blue-800 text-sm px-2 py-1 rounded">
+                      {point}
+                    </span>
+                  )) || <span className="text-gray-400">No key points available</span>}
                 </div>
               </div>
             </>
@@ -478,6 +631,58 @@ export default function ChatInterface() {
           </div>
         ) : (
           <>
+            {/* Phase Indicator */}
+            <div className="bg-white p-4 border-b border-gray-200">
+              <div className="max-w-3xl mx-auto">
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="text-lg font-semibold text-gray-800">Loan Assessment Progress</h3>
+                </div>
+                <div className="flex items-center">
+                  <div className="flex-1">
+                    <div className="relative">
+                      {/* Progress bar */}
+                      <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+                        <div 
+                          className="h-full bg-blue-500 transition-all duration-500" 
+                          style={{ width: `${(currentPhase / 3) * 100}%` }}
+                        ></div>
+                      </div>
+                      
+                      {/* Phase markers */}
+                      <div className="flex justify-between mt-2">
+                        <div className="flex flex-col items-center">
+                          <div className={`w-6 h-6 rounded-full flex items-center justify-center ${
+                            currentPhase >= 1 ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-600'
+                          }`}>
+                            1
+                          </div>
+                          <span className="text-xs mt-1 font-medium text-gray-600">Personal Info</span>
+                        </div>
+                        
+                        <div className="flex flex-col items-center">
+                          <div className={`w-6 h-6 rounded-full flex items-center justify-center ${
+                            currentPhase >= 2 ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-600'
+                          }`}>
+                            2
+                          </div>
+                          <span className="text-xs mt-1 font-medium text-gray-600">Financial Analysis</span>
+                        </div>
+                        
+                        <div className="flex flex-col items-center">
+                          <div className={`w-6 h-6 rounded-full flex items-center justify-center ${
+                            currentPhase >= 3 ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-600'
+                          }`}>
+                            3
+                          </div>
+                          <span className="text-xs mt-1 font-medium text-gray-600">Loan Eligibility</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
             {/* Chat Messages */}
             <div className="flex-1 overflow-y-auto p-4 bg-gray-50">
               {messages.map((msg, index) => (
