@@ -48,10 +48,10 @@ const ToolCard = ({ title, description, icon: Icon, path, delay = 0 }: ToolCardP
     <Link href={path} className="block h-full">
       <Card 
         ref={cardRef} 
-        className="finance-card h-full transition-all duration-300 hover:translate-y-[-5px] opacity-0 translate-y-4"
+        className="bg-white rounded-xl shadow-md hover:shadow-lg overflow-hidden border border-white-200 h-full transition-all duration-300 hover:translate-y-[-5px] opacity-0 translate-y-4"
       >
         <CardHeader className="pb-2 flex flex-row items-center gap-3">
-          <div className="bg-finance-200 p-3 rounded-md text-finance-700">
+          <div className="bg-blue-200 p-3 rounded-md text-finance-700">
             <Icon size={24} />
           </div>
           <CardTitle className="text-lg font-semibold">{title}</CardTitle>
