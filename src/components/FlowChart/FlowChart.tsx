@@ -654,29 +654,32 @@ const FlowChart: React.FC<FlowChartProps> = ({
     if (visibleCards.length > 0 && containerRef.current) {
       const lastCardIndex = visibleCards[visibleCards.length - 1];
       
-      // Calculate the scroll position to center the card in the viewport
-      const cardPosition = positions[lastCardIndex].y;
-      const containerHeight = containerRef.current.clientHeight;
-      const scrollTarget = cardPosition - (containerHeight / 3); // Show more context above the card
-      
-      // Scroll to the calculated position with a smooth animation
-      containerRef.current.scrollTo({
-        top: Math.max(0, scrollTarget),
-        behavior: 'smooth'
-      });
+      // Check if the position exists before accessing its y property
+      if (positions[lastCardIndex] && typeof positions[lastCardIndex].y === 'number') {
+        // Calculate the scroll position to center the card in the viewport
+        const cardPosition = positions[lastCardIndex].y;
+        const containerHeight = containerRef.current.clientHeight;
+        const scrollTarget = cardPosition - (containerHeight / 3); // Show more context above the card
+        
+        // Scroll to the calculated position with a smooth animation
+        containerRef.current.scrollTo({
+          top: Math.max(0, scrollTarget),
+          behavior: 'smooth'
+        });
+      }
     }
   }, [visibleCards]);
 
   // Generate the path data for the continuous flow line
   const generatePathData = () => {
-    if (visibleCards.length === 0) return `M${lineX} 200`;
+    if (visibleCards.length === 0) return '';
     
-    let pathData = `M${lineX} 200`; // Start at the first card
+    const lineX = 100; // X position of the vertical line
+    let pathData = `M${lineX} ${positions[visibleCards[0]]?.y || 0}`;
     
-    // For each visible card, add a line to its position
-    for (let i = 0; i < visibleCards.length; i++) {
+    for (let i = 1; i < visibleCards.length; i++) {
       const index = visibleCards[i];
-      if (index > 0) { // Skip the first card as we already started there
+      if (index > 0 && positions[index]) { // Check if positions[index] exists
         pathData += ` L${lineX} ${positions[index].y}`;
       }
     }
