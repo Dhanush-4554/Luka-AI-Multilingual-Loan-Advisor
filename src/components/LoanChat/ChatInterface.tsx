@@ -247,7 +247,7 @@ export default function ChatInterface() {
   };
 
   // Modify processAudio to include stage updates
-  const processAudio = async (audioBlob: Blob) => {
+  const processAudio = async (audioBlob: Blob) => { 
     try {
       setIsProcessing(true);
       const sttResponse = await transcribeAudio(audioBlob, selectedLanguage!);

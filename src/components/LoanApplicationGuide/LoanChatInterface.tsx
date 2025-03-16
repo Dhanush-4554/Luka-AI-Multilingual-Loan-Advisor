@@ -1,11 +1,11 @@
 'use client';
 import { useState, useEffect, useRef } from 'react';
-import ChatMessage from './LoanChatMessage';
-import { sendChatMessage } from '@/utils/loanChat';
+import ChatMessage from './ChatMessage';
+import { sendChatMessage } from '@/utils/application-guide/loan-appli';
 import { generateTTS } from '@/utils/tts';
 import { LANGUAGES } from '@/components/LoanGuide/data';
 import { transcribeAudio } from '@/utils/stt';
-import { Mic, Headphones, MessageCircle, ChevronDown, ArrowRight, GitBranch, GitCommit, GitPullRequest, LayoutGrid, PieChart, BarChart, List, Box, ChevronLeft } from 'lucide-react';
+import { Mic, Headphones, MessageCircle, ChevronDown, ArrowRight, GitBranch, GitCommit, GitPullRequest, LayoutGrid, PieChart, BarChart, List, Box, ChevronLeft, CheckCircle2 } from 'lucide-react';
 
 // Define and export the Message type
 export type Message = {
@@ -13,11 +13,106 @@ export type Message = {
   sender: 'user' | 'bot';
 };
 
+// Define the loan application stages
+const LOAN_STAGES = [
+  {
+    title: "Information Collection",
+    description: "Basic details and requirements",
+    icon: Box
+  },
+  {
+    title: "Loan Assessment",
+    description: "Evaluating loan options",
+    icon: BarChart
+  },
+  {
+    title: "Final Approval",
+    description: "Loan offer and completion",
+    icon: CheckCircle2
+  }
+];
+
+// Define stage keywords for better detection
+const STAGE_KEYWORDS = {
+  INITIAL: ['name', 'age', 'profession', 'personal', 'details', 'information', 'basic'],
+  ASSESSMENT: ['evaluate', 'income', 'salary', 'credit', 'bank', 'statement', 'documents', 'verify'],
+  APPROVAL: ['approve', 'offer', 'sanction', 'grant', 'confirm', 'congratulation', 'success']
+};
+
+// Define supported language codes
+type LanguageCode = 'hi-IN' | 'kn-IN' | 'te-IN' | 'ta-IN' | 'mr-IN' | 'ml-IN' | 'gu-IN' | 'en-IN';
+
+// Define multilingual greetings
+const GREETINGS: Record<LanguageCode, string> = {
+  'hi-IN': 'नमस्ते! मैं आपका लोन सलाहकार हूं। कृपया बताएं कि आप किस प्रकार का लोन लेना चाहते हैं? (होम लोन, पर्सनल लोन, बिजनेस लोन, या एजुकेशन लोन)',
+  'kn-IN': 'ನಮಸ್ಕಾರ! ನಾನು ನಿಮ್ಮ ಸಾಲದ ಸಲಹೆಗಾರ. ನೀವು ಯಾವ ರೀತಿಯ ಸಾಲವನ್ನು ಪಡೆಯಲು ಬಯಸುತ್ತೀರಿ? (ಗೃಹ ಸಾಲ, ವೈಯಕ್ತಿಕ ಸಾಲ, ವ್ಯಾಪಾರ ಸಾಲ, ಅಥವಾ ಶಿಕ್ಷಣ ಸಾಲ)',
+  'te-IN': 'నమస్కారం! నేను మీ రుణ సలహాదారును. మీరు ఏ రకమైన రుణం తీసుకోవాలనుకుంటున్నారో దయచేసి చెప్పండి? (హోమ్ లోన్, పర్సనల్ లోన్, బిజినెస్ లోన్, లేదా ఎడ്యుకేషన్ లోన్)',
+  'ta-IN': 'வணக்கம்! நான் உங்கள் கடன் ஆலோசகர். நீங்கள் எந்த வகையான கடனைப் பெற விரும்புகிறீர்கள்? (வீட்டுக் கடன், தனிப்பட்ட கடன், வணிகக் கடன், அல்லது கல்விக் கடன்)',
+  'mr-IN': 'नमस्कार! मी तुमचा कर्ज सल्लागार आहे. कृपया सांगा की तुम्हाला कोणत्या प्रकारचे कर्ज हवे आहे? (होम लोन, पर्सनल लोन, बिझनेस लोन, किंवा एज्युकेशन लोन)',
+  'ml-IN': 'നമസ്കാരം! ഞാൻ നിങ്ങളുടെ വായ്പാ ഉപദേശകനാണ്. ഏത് തരം വായ്പയാണ് നിങ്ങൾക്ക് വേണ്ടത്? (ഹോം ലോൺ, പേഴ്സണൽ ലോൺ, ബിസിനസ്സ് ലോൺ, അല്ലെങ്കിൽ എഡ്യുക്കേഷൻ ലോൺ)',
+  'gu-IN': 'નમસ્તે! હું તમારો લોન સલાહકાર છું. કૃપા કરીને જણાવો કે તમે કયા પ્રકારનું લોન લેવા માંગો છો? (હોમ લોન, પર્સનલ લોન, બિઝનેસ લોન, અથવા એજ્યુકેશન લોન)',
+  'en-IN': 'Hello! I\'m your loan advisor. Please tell me which type of loan you\'re interested in? (home loan, personal loan, business loan, or education loan)'
+};
+
+// LoanProgressStepper Component
+const LoanProgressStepper = ({ currentStage }: { currentStage: number }) => {
+  return (
+    <div className="bg-white px-6 py-4 border-b border-gray-200">
+      <div className="max-w-3xl mx-auto">
+        <div className="relative">
+          {/* Progress Line */}
+          <div className="absolute top-1/2 left-0 right-0 h-0.5 bg-gray-200 -translate-y-1/2">
+            <div 
+              className="absolute top-0 left-0 h-full bg-blue-500 transition-all duration-500 ease-out"
+              style={{ width: `${(currentStage / (LOAN_STAGES.length - 1)) * 100}%` }}
+            />
+          </div>
+          
+          {/* Stages */}
+          <div className="relative flex justify-between">
+            {LOAN_STAGES.map((stage, index) => {
+              const StageIcon = stage.icon;
+              const isCompleted = index < currentStage;
+              const isActive = index === currentStage;
+              
+              return (
+                <div key={index} className="flex flex-col items-center relative">
+                  {/* Stage Icon */}
+                  <div className={`relative z-10 flex items-center justify-center w-10 h-10 rounded-full border-2 transition-all duration-300 bg-white ${
+                    isCompleted ? 'border-blue-500 text-blue-500' :
+                    isActive ? 'border-blue-500 text-blue-500' :
+                    'border-gray-300 text-gray-400'
+                  }`}>
+                    <StageIcon className="w-5 h-5" />
+                  </div>
+                  
+                  {/* Stage Content */}
+                  <div className="mt-2 text-center">
+                    <h4 className={`text-sm font-medium ${
+                      isCompleted || isActive ? 'text-blue-600' : 'text-gray-500'
+                    }`}>
+                      {stage.title}
+                    </h4>
+                    <p className="text-xs text-gray-500 mt-1 max-w-[120px]">
+                      {stage.description}
+                    </p>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 export default function LoanChatInterface() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
   const [selectedLanguage, setSelectedLanguage] = useState<string | null>(null);
   const [isRecording, setIsRecording] = useState(false);
+  const [currentStage, setCurrentStage] = useState(0);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
   const audioContextRef = useRef<AudioContext | null>(null);
@@ -56,7 +151,7 @@ export default function LoanChatInterface() {
   const startConversation = async () => {
     try {
       setIsProcessing(true);
-      const greeting = `Hello! I'm your loan advisor. How can I help you today?`;
+      const greeting = GREETINGS[selectedLanguage as LanguageCode] || GREETINGS['en-IN'];
       setMessages(prev => [...prev, { text: greeting, sender: 'bot' }]);
       await generateTTS(selectedLanguage!, greeting);
       
@@ -131,7 +226,28 @@ export default function LoanChatInterface() {
     }
   };
 
-  const processAudio = async (audioBlob: Blob) => {
+  // Enhanced stage update function
+  const updateCurrentStage = (message: string) => {
+    const lowerMessage = message.toLowerCase();
+    
+    // Only allow moving to next stage or staying in current stage
+    let newStage = currentStage;
+    
+    // Check for keywords in each stage
+    if (STAGE_KEYWORDS.ASSESSMENT.some(keyword => lowerMessage.includes(keyword))) {
+      newStage = Math.max(currentStage, 1);
+    } else if (STAGE_KEYWORDS.APPROVAL.some(keyword => lowerMessage.includes(keyword))) {
+      newStage = Math.max(currentStage, 2);
+    }
+    
+    // Update stage with animation
+    if (newStage !== currentStage) {
+      setCurrentStage(newStage);
+    }
+  };
+
+  // Modify processAudio to include stage updates
+  const processAudio = async (audioBlob: Blob) => { 
     try {
       setIsProcessing(true);
       const sttResponse = await transcribeAudio(audioBlob, selectedLanguage!);
@@ -139,6 +255,7 @@ export default function LoanChatInterface() {
       if (sttResponse?.transcript) {
         setMessages(prev => [...prev, { text: sttResponse.transcript, sender: 'user' }]);
         await processUserMessage(sttResponse.transcript);
+        updateCurrentStage(sttResponse.transcript);
       }
     } catch (error) {
       console.error('Error processing audio:', error);
@@ -268,12 +385,12 @@ export default function LoanChatInterface() {
     };
   }, []);
 
-  // Add auto-scroll effect
-  useEffect(() => {
-    if (messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
-    }
-  }, [messages]);
+  // // Add auto-scroll effect
+  // useEffect(() => {
+  //   if (messagesEndRef.current) {
+  //     messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+  //   }
+  // }, [messages]);
 
   // Add new function to process chat history
   const generateVisualization = async () => {
@@ -478,6 +595,9 @@ export default function LoanChatInterface() {
           </div>
         ) : (
           <>
+            {/* Progress Stepper */}
+            {/* <LoanProgressStepper currentStage={currentStage} /> */}
+
             {/* Chat Messages */}
             <div className="flex-1 overflow-y-auto p-4 bg-gray-50">
               {messages.map((msg, index) => (
