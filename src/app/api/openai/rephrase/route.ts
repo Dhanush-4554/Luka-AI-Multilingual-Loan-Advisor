@@ -7,6 +7,8 @@ interface CardData {
   content: string;
   icon: string;
   gradient: string;
+  details?: string;
+  requirements?: string;
 }
 
 const openai = new OpenAI({
@@ -15,7 +17,7 @@ const openai = new OpenAI({
 
 export async function POST(request: Request) {
   try {
-    const { cardData, type } = await request.json();
+    const { cardData, type, loanType, includeDetails = false } = await request.json();
     
     if (!cardData || !Array.isArray(cardData)) {
       return NextResponse.json(
@@ -41,7 +43,25 @@ export async function POST(request: Request) {
     
     if (type === 'loan_process') {
       systemPrompt = "You are a financial content specialist who creates engaging, clear, and professional descriptions for loan application processes. Your rephrasing should be concise yet informative, using financial terminology appropriately.";
+      
+      if (loanType && loanType !== 'general') {
+        systemPrompt += ` Focus specifically on the ${loanType} loan process, highlighting the unique aspects and requirements of this loan type.`;
+      }
     }
+
+    let userPrompt = `Please rephrase the following loan application process steps to make them more engaging, clear, and varied. Use synonyms for titles and create fresh descriptions. Keep the same icons and gradients.`;
+    
+    if (includeDetails) {
+      userPrompt += ` For each step, also provide additional details and specific requirements in separate fields.`;
+    }
+    
+    userPrompt += `\n\nCard Data:\n${JSON.stringify(cardData, null, 2)}\n\nReturn the result as a JSON array with the same structure as the input, but with rephrased 'title' and 'content' properties.`;
+    
+    if (includeDetails) {
+      userPrompt += ` Also include 'details' and 'requirements' fields for each card.`;
+    }
+    
+    userPrompt += ` Maintain the same 'id', 'icon', and 'gradient' values. Do not include any explanations, just the JSON array.`;
 
     const completion = await openai.chat.completions.create({
       model: "gpt-3.5-turbo",
@@ -52,12 +72,7 @@ export async function POST(request: Request) {
         },
         { 
           role: "user", 
-          content: `Please rephrase the following loan application process steps to make them more engaging, clear, and varied. Use synonyms for titles and create fresh descriptions. Keep the same icons and gradients.
-
-Card Data:
-${JSON.stringify(cardData, null, 2)}
-
-Return the result as a JSON array with the same structure as the input, but with rephrased 'title' and 'content' properties. Maintain the same 'id', 'icon', and 'gradient' values. Do not include any explanations, just the JSON array.`
+          content: userPrompt
         }
       ],
       response_format: { type: "json_object" }
@@ -108,7 +123,11 @@ Return the result as a JSON array with the same structure as the input, but with
               title: typeof parsedResponse[matchingKey].title === 'string' ? 
                 parsedResponse[matchingKey].title : original.title,
               content: typeof parsedResponse[matchingKey].content === 'string' ? 
-                parsedResponse[matchingKey].content : original.content
+                parsedResponse[matchingKey].content : original.content,
+              details: typeof parsedResponse[matchingKey].details === 'string' ? 
+                parsedResponse[matchingKey].details : original.details,
+              requirements: typeof parsedResponse[matchingKey].requirements === 'string' ? 
+                parsedResponse[matchingKey].requirements : original.requirements
             };
           }
           return original;
@@ -136,7 +155,8 @@ Return the result as a JSON array with the same structure as the input, but with
         const rephrasedData = cardData.map((card: CardData) => ({
           ...card,
           title: `${card.title}`,
-          content: `${card.content}`
+          content: `${card.content}`,
+          // details and requirements will be passed through from the original
         }));
         
         return NextResponse.json({

@@ -107,7 +107,13 @@ const LoanProgressStepper = ({ currentStage }: { currentStage: number }) => {
   );
 };
 
-export default function LoanChatInterface() {
+export default function LoanChatInterface({ 
+  loanType, 
+  onLoanTypeSelected 
+}: { 
+  loanType?: string |null ; 
+  onLoanTypeSelected?: (loanType: string) => void;
+}) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
   const [selectedLanguage, setSelectedLanguage] = useState<string | null>(null);
@@ -127,6 +133,32 @@ export default function LoanChatInterface() {
   const [summaryData, setSummaryData] = useState<any>(null);
   const [isSummaryOpen, setIsSummaryOpen] = useState(false);
   const [isSummarizing, setIsSummarizing] = useState(false);
+  const [detectedLoanType, setDetectedLoanType] = useState<string | null>(null);
+
+  // Loan type detection patterns
+  const loanTypePatterns = {
+    personal: ['personal loan', 'personal finance', 'individual loan'],
+    home: ['home loan', 'housing loan', 'mortgage', 'property loan', 'house loan'],
+    car: ['car loan', 'auto loan', 'vehicle loan', 'automobile loan'],
+    education: ['education loan', 'student loan', 'study loan', 'academic loan', 'college loan'],
+    business: ['business loan', 'commercial loan', 'enterprise loan', 'startup loan']
+  };
+
+  // Function to detect loan type from message
+  const detectLoanType = (message: string) => {
+    if (!message || loanType) return null; // Skip if already have loan type
+    
+    const lowerMessage = message.toLowerCase();
+    
+    // Check each loan type pattern
+    for (const [type, patterns] of Object.entries(loanTypePatterns)) {
+      if (patterns.some(pattern => lowerMessage.includes(pattern))) {
+        return type;
+      }
+    }
+    
+    return null;
+  };
 
   // Initialize audio context and analyser
   const initAudioContext = () => {
@@ -148,10 +180,46 @@ export default function LoanChatInterface() {
     }
   }, [selectedLanguage]);
 
+  // Auto-scroll to bottom when messages change
+  // useEffect(() => {
+  //   if (messagesEndRef.current) {
+  //     messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+  //   }
+  // }, [messages]);
+
   const startConversation = async () => {
     try {
       setIsProcessing(true);
-      const greeting = GREETINGS[selectedLanguage as LanguageCode] || GREETINGS['en-IN'];
+      
+      // Customize greeting based on loan type if available
+      let greeting = GREETINGS[selectedLanguage as LanguageCode] || GREETINGS['en-IN'];
+      
+      if (loanType) {
+        // If loan type is already selected, customize the greeting
+        const loanTypeFormatted = loanType.charAt(0).toUpperCase() + loanType.slice(1);
+        
+        if (selectedLanguage === 'en-IN') {
+          greeting = `Hello! I'm your loan advisor for ${loanTypeFormatted} Loans. Let's get started with your application. First, could you please tell me your name?`;
+        } else if (selectedLanguage === 'hi-IN') {
+          greeting = `नमस्ते! मैं आपका ${loanTypeFormatted} लोन सलाहकार हूं। आइए आपके आवेदन के साथ शुरू करें। सबसे पहले, क्या आप मुझे अपना नाम बता सकते हैं?`;
+        } else {
+          // For other languages, still use the customized English greeting
+          greeting = `Hello! I'm your loan advisor for ${loanTypeFormatted} Loans. Let's get started with your application. First, could you please tell me your name?`;
+        }
+        
+        // Set stage to 1 since we're already past loan type selection
+        setCurrentStage(1);
+      } else {
+        // If no loan type yet, ask specifically about loan type
+        if (selectedLanguage === 'en-IN') {
+          greeting = "Hello! I'm your loan advisor. Please tell me what type of loan you're interested in? For example, home loan, personal loan, business loan, car loan, or education loan.";
+        } else if (selectedLanguage === 'hi-IN') {
+          greeting = "नमस्ते! मैं आपका लोन सलाहकार हूं। कृपया मुझे बताएं कि आप किस प्रकार के लोन में रुचि रखते हैं? उदाहरण के लिए, होम लोन, पर्सनल लोन, बिजनेस लोन, कार लोन, या एजुकेशन लोन।";
+        } else {
+          greeting = "Hello! I'm your loan advisor. Please tell me what type of loan you're interested in? For example, home loan, personal loan, business loan, car loan, or education loan.";
+        }
+      }
+      
       setMessages(prev => [...prev, { text: greeting, sender: 'bot' }]);
       await generateTTS(selectedLanguage!, greeting);
       
@@ -246,16 +314,34 @@ export default function LoanChatInterface() {
     }
   };
 
-  // Modify processAudio to include stage updates
+  // Modify processAudio to include loan type detection
   const processAudio = async (audioBlob: Blob) => { 
     try {
       setIsProcessing(true);
       const sttResponse = await transcribeAudio(audioBlob, selectedLanguage!);
       
       if (sttResponse?.transcript) {
-        setMessages(prev => [...prev, { text: sttResponse.transcript, sender: 'user' }]);
-        await processUserMessage(sttResponse.transcript);
-        updateCurrentStage(sttResponse.transcript);
+        const userMessage = sttResponse.transcript;
+        setMessages(prev => [...prev, { text: userMessage, sender: 'user' }]);
+        
+        // Detect loan type from user message if not already set
+        if (!loanType && !detectedLoanType) {
+          const detected = detectLoanType(userMessage);
+          if (detected) {
+            setDetectedLoanType(detected);
+            
+            // Notify parent component about detected loan type
+            if (onLoanTypeSelected) {
+              onLoanTypeSelected(detected);
+            }
+            
+            // Update stage
+            setCurrentStage(1);
+          }
+        }
+        
+        await processUserMessage(userMessage);
+        updateCurrentStage(userMessage);
       }
     } catch (error) {
       console.error('Error processing audio:', error);
@@ -337,11 +423,21 @@ export default function LoanChatInterface() {
     return Math.min(calculatedDuration, maxDuration);
   };
 
-  // Modify processUserMessage to update recording duration
+  // Modify processUserMessage to use detected loan type
   const processUserMessage = async (message: string) => {
     try {
-      const response = await sendChatMessage('12345', message, selectedLanguage!);
+      // Update the current stage based on the message content
+      updateCurrentStage(message);
+      
+      // Use detected loan type or provided loan type
+      const currentLoanType = loanType || detectedLoanType;
+      
+      // Include loan type in the chat message if available
+      const response = await sendChatMessage('12345', message, selectedLanguage!, currentLoanType);
       setMessages(prev => [...prev, { text: response, sender: 'bot' }]);
+      
+      // Update stage based on bot response as well
+      updateCurrentStage(response);
       
       // Calculate new recording duration based on response length
       const newDuration = calculateRecordingDuration(response);
@@ -384,13 +480,6 @@ export default function LoanChatInterface() {
       }
     };
   }, []);
-
-  // // Add auto-scroll effect
-  // useEffect(() => {
-  //   if (messagesEndRef.current) {
-  //     messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
-  //   }
-  // }, [messages]);
 
   // Add new function to process chat history
   const generateVisualization = async () => {

@@ -1,4 +1,4 @@
-export const sendChatMessage = async (userId: string, message: string, languageCode: string) => {
+export const sendChatMessage = async (userId: string, message: string, languageCode: string, loanType?: string | null) => {
     try {
       const response = await fetch('/api/loam-application', {
         method: 'POST',
@@ -8,7 +8,8 @@ export const sendChatMessage = async (userId: string, message: string, languageC
         body: JSON.stringify({
           userId,
           message,
-          languageCode
+          languageCode,
+          loanType
         }),
       });
   
