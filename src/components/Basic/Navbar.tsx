@@ -17,7 +17,7 @@ const Navbar: React.FC = () => {
         { name: 'Features', route: '/our-features' },
         { name: 'Eligibility', route: '/check-eligibility' },
         { name: 'Education', route: '/financial-education' },
-        { name: 'About', route: '/about-us' }
+        { name: 'Financial Advisor', route: '/financial-advisor' }
     ];
 
     useEffect(() => {
@@ -102,14 +102,14 @@ const Navbar: React.FC = () => {
                             Education
                         </Link>
                         <Link
-                            href="/about"
+                            href="/financial-advisor"
                             className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
                                 shouldUseScrolledStyle
                                     ? 'text-gray-700 hover:text-blue-600 hover:bg-blue-50/80' 
                                     : 'text-white hover:text-white hover:bg-blue-500/50'
                             }`}
                         >
-                            About
+                            Financial Advisor
                         </Link>
                         <Link
                             href="/loan-chat"
