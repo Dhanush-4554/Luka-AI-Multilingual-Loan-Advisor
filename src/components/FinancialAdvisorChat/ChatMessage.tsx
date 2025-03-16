@@ -17,14 +17,14 @@ export default function ChatMessage({ message }: ChatMessageProps) {
       <div 
         className={`max-w-[85%] p-4 rounded-lg shadow-sm flex items-start gap-3 ${
           message.sender === 'user' 
-            ? 'bg-[hsl(var(--finance-primary))] text-white rounded-tr-none' 
+            ? 'bg-[hsl(var(--finance-primary))] text-blue-600 rounded-tr-none' 
             : 'bg-white text-gray-800 border border-gray-100 rounded-tl-none'
         }`}
       >
         <div className={`flex-shrink-0 ${message.sender === 'user' ? 'order-last ml-2' : 'mr-2'}`}>
           {message.sender === 'user' ? (
             <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center">
-              <User className="w-4 h-4 text-white" />
+              <User className="w-4 h-4 text-blue-600" />
             </div>
           ) : (
             <div className="w-8 h-8 rounded-full bg-green-50 flex items-center justify-center">

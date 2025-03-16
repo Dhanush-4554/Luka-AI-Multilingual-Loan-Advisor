@@ -10,21 +10,21 @@ export default function ChatMessage({ message }: ChatMessageProps) {
   const formatMessageContent = (text: string) => {
     // Split the text into sections based on numbers followed by dots or parentheses
     const sections = text.split(/(\d+[\.)]\s+)/);
-    
+
     // Check if this is a process explanation message
-    const isProcessExplanation = text.includes("Document Collection") || 
-                                text.includes("Basic Eligibility") ||
-                                text.includes("Application Submission") ||
-                                text.includes("Verification Process");
+    const isProcessExplanation = text.includes("Document Collection") ||
+      text.includes("Basic Eligibility") ||
+      text.includes("Application Submission") ||
+      text.includes("Verification Process");
 
     // Format acknowledgment questions
     const formatAcknowledgment = (text: string) => {
       if (text.includes("?") && (
-          text.includes("understand") || 
-          text.includes("clear") || 
-          text.includes("questions") ||
-          text.includes("doubts")
-        )) {
+        text.includes("understand") ||
+        text.includes("clear") ||
+        text.includes("questions") ||
+        text.includes("doubts")
+      )) {
         return (
           <div className="mt-4 flex items-center gap-2 text-blue-600 font-medium">
             <CheckCircle2 className="w-5 h-5" />
@@ -81,18 +81,16 @@ export default function ChatMessage({ message }: ChatMessageProps) {
 
   return (
     <div className={`flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'} mb-6`}>
-      <div className={`max-w-[85%] p-4 rounded-lg flex items-start gap-4 shadow-sm ${
-        message.sender === 'user' 
-          ? 'bg-blue-500 text-white' 
-          : 'bg-white text-gray-800 border border-gray-100'
-      }`}>
-        <div className={`p-2 rounded-full ${
-          message.sender === 'user' 
-            ? 'bg-blue-600' 
-            : 'bg-blue-50'
+      <div className={`max-w-[85%] p-4 rounded-lg flex items-start gap-4 shadow-sm ${message.sender === 'user'
+        ? 'bg-blue-500 text-white'
+        : 'bg-white text-gray-800 border border-gray-100'
         }`}>
+        <div className={`p-2 rounded-full ${message.sender === 'user'
+          ? 'bg-blue-600'
+          : 'bg-blue-500'
+          }`}>
           {message.sender === 'user' ? (
-            <User className="w-5 h-5" />
+            <User className="w-5 h-5 text-blue-500" />
           ) : (
             <Bot className="w-5 h-5 text-blue-500" />
           )}

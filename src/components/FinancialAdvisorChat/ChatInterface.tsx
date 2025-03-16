@@ -1,3 +1,5 @@
+
+
 'use client';
 import { useState, useEffect, useRef } from 'react';
 import ChatMessage from './ChatMessage';
@@ -8,6 +10,21 @@ import { LANGUAGES } from '@/components/LoanGuide/data';
 import { transcribeAudio } from '@/utils/stt';
 import { Mic, Headphones, MessageCircle, ChevronDown, ArrowRight, DollarSign, PieChart, BarChart, ChevronLeft, Settings, Moon, Sun } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+
+// Define supported language codes
+type LanguageCode = 'hi-IN' | 'kn-IN' | 'te-IN' | 'ta-IN' | 'mr-IN' | 'ml-IN' | 'gu-IN' | 'en-IN';
+
+// Define multilingual greetings
+const GREETINGS: Record<LanguageCode, string> = {
+  'hi-IN': 'नमस्ते! मैं आपका वित्तीय सलाहकार हूं। आपकी वित्तीय स्थिति के बारे में अधिक जानने और व्यक्तिगत सुझाव प्रदान करने में मदद करने के लिए, मुझे बस कुछ बुनियादी जानकारी चाहिए। आपका नाम क्या है?',
+  'kn-IN': 'ನಮಸ್ಕಾರ! ನಾನು ನಿಮ್ಮ ಹಣಕಾಸು ಸಲಹೆಗಾರ. ನಿಮ್ಮ ಹಣಕಾಸು ಸ್ಥಿತಿಯ ಬಗ್ಗೆ ಹೆಚ್ಚು ತಿಳಿದುಕೊಳ್ಳಲು ಮತ್ತು ವೈಯಕ್ತಿಕ ಸಲಹೆಗಳನ್ನು ನೀಡಲು ಸಹಾಯ ಮಾಡಲು, ನನಗೆ ಕೇವಲ ಕೆಲವು ಮೂಲ ಮಾಹಿತಿ ಬೇಕು. ನಿಮ್ಮ ಹೆಸರೇನು?',
+  'te-IN': 'నమస్కారం! నేను మీ ఆర్థిక సలహాదారుని. మీ ఆర్థిక పరిస్థితి గురించి మరింత తెలుసుకోవడానికి మరియు వ్యక్తిగత చిట్కాలను అందించడంలో సహాయపడటానికి, నాకు కొంత ప్రాథమిక సమాచారం మాత్రమే కావాలి. మీ పేరు ఏమిటి?',
+  'ta-IN': 'வணக்கம்! நான் உங்கள் நிதி ஆலோசகர். உங்கள் நிதி நிலைமை பற்றி மேலும் அறிந்து கொள்ளவும், தனிப்பட்ட உதவிக்குறிப்புகளை வழங்கவும், எனக்கு சில அடிப்படை தகவல்கள் மட்டுமே தேவை. உங்கள் பெயர் என்ன?',
+  'mr-IN': 'नमस्कार! मी तुमचा आर्थिक सल्लागार आहे. तुमच्या आर्थिक स्थितीबद्दल अधिक जाणून घेण्यासाठी आणि वैयक्तिक टिप्स देण्यासाठी, मला फक्त काही मूलभूत माहिती हवी आहे. तुमचे नाव काय आहे?',
+  'ml-IN': 'നമസ്കാരം! ഞാൻ നിങ്ങളുടെ സാമ്പത്തിക ഉപദേശകനാണ്. നിങ്ങളുടെ സാമ്പത്തിക സ്ഥിതിയെക്കുറിച്ച് കൂടുതൽ അറിയാനും വ്യക്തിഗത നുറുങ്ങുകൾ നൽകാനും സഹായിക്കുന്നതിന്, എനിക്ക് ചില അടിസ്ഥാന വിവരങ്ങൾ മാത്രമേ ആവശ്യമുള്ളൂ. നിങ്ങളുടെ പേര് എന്താണ്?',
+  'gu-IN': 'નમસ્તે! હું તમારો નાણાકીય સલાહકાર છું. તમારી નાણાકીય સ્થિતિ વિશે વધુ જાણવા અને વ્યક્તિગત ટિપ્સ પ્રદાન કરવામાં મદદ કરવા માટે, મારે માત્ર કેટલીક મૂળભૂત માહિતીની જરૂર છે. તમારું નામ શું છે?',
+  'en-IN': 'Hello! I\'m your Financial Advisor. To help you learn more about your financial situation and provide personalized tips, I just need some basic information. What\'s your name?'
+};
 
 export default function ChatInterface() {
   const router = useRouter();
@@ -56,21 +73,11 @@ export default function ChatInterface() {
     }
   }, [selectedLanguage]);
 
-  // Auto-scroll to bottom when messages change
-  useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
-
-  const scrollToBottom = () => {
-    if (messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
-    }
-  };
 
   const startConversation = async () => {
     try {
       setIsProcessing(true);
-      const greeting = `Hello! I'm your Financial Advisor. To help you learn more about your financial situation and provide personalized tips, I just need some basic information. What's your name?`;
+      const greeting = GREETINGS[selectedLanguage as LanguageCode] || GREETINGS['en-IN'];
       setMessages(prev => [...prev, { text: greeting, sender: 'bot' }]);
       await generateTTS(selectedLanguage!, greeting);
       
