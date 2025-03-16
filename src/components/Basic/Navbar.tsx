@@ -71,6 +71,18 @@ const Navbar: React.FC = () => {
                         >
                             Home
                         </Link>
+                        
+                        <Link
+                            href="/loan-chat"
+                            className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
+                                shouldUseScrolledStyle
+                                    ? 'text-gray-700 hover:text-blue-600 hover:bg-blue-50/80' 
+                                    : 'text-white hover:text-white hover:bg-blue-500/50'
+                            }`}
+                        >
+                            Eligibility
+                        </Link>
+
                         <Link
                             href="/loan-assist"
                             className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
@@ -81,26 +93,7 @@ const Navbar: React.FC = () => {
                         >
                             Guidance
                         </Link>
-                        <Link
-                            href="/check-eligibility"
-                            className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
-                                shouldUseScrolledStyle
-                                    ? 'text-gray-700 hover:text-blue-600 hover:bg-blue-50/80' 
-                                    : 'text-white hover:text-white hover:bg-blue-500/50'
-                            }`}
-                        >
-                            Eligibility
-                        </Link>
-                        <Link
-                            href="/financial-literacy"
-                            className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
-                                shouldUseScrolledStyle
-                                    ? 'text-gray-700 hover:text-blue-600 hover:bg-blue-50/80' 
-                                    : 'text-white hover:text-white hover:bg-blue-500/50'
-                            }`}
-                        >
-                            Education
-                        </Link>
+
                         <Link
                             href="/financial-advisor"
                             className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
@@ -112,29 +105,20 @@ const Navbar: React.FC = () => {
                             Financial Advisor
                         </Link>
                         <Link
-                            href="/loan-chat"
+                            href="/financial-literacy"
                             className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
                                 shouldUseScrolledStyle
                                     ? 'text-gray-700 hover:text-blue-600 hover:bg-blue-50/80' 
                                     : 'text-white hover:text-white hover:bg-blue-500/50'
                             }`}
                         >
-                            Loan-ChatBot
+                            Education
                         </Link>
 
                         <div className="ml-6 flex items-center space-x-3">
+                            
                             <Link
-                                href="/user/login"
-                                className={`px-5 py-2 rounded-full text-sm font-medium border transition-all duration-200 ${
-                                    shouldUseScrolledStyle
-                                        ? 'border-blue-500 text-blue-600 hover:bg-blue-50'
-                                        : 'border-white/30 text-white hover:bg-blue-500/50'
-                                }`}
-                            >
-                                Login
-                            </Link>
-                            <Link
-                                href="/user/signup"
+                                href="/loan-chat"
                                 className={`px-5 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
                                     shouldUseScrolledStyle
                                         ? 'bg-blue-600 text-white hover:bg-blue-700 shadow-lg shadow-blue-500/20 hover:shadow-blue-500/30' 
