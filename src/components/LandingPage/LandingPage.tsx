@@ -642,9 +642,8 @@ const LandingPage: React.FC = () => {
                                 transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
                             ></motion.div>
                             
-                            {/* Video Placeholder */}
+                            {/* Video Player */}
                             <div className="relative aspect-video bg-gradient-to-br from-gray-900 to-black rounded-2xl overflow-hidden border border-white/10 z-10">
-                                {/* Video Element */}
                                 <video 
                                     className="w-full h-full object-cover"
                                     controls
@@ -653,35 +652,6 @@ const LandingPage: React.FC = () => {
                                     <source src="/LukaAI.mp4" type="video/mp4" />
                                     Your browser does not support the video tag.
                                 </video>
-                                
-                                {/* Play Button - Only show when video is not playing */}
-                                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                                    <motion.div 
-                                        className="w-24 h-24 rounded-full bg-white/10 backdrop-filter backdrop-blur-md flex items-center justify-center cursor-pointer border border-white/20 group"
-                                        whileHover={{ 
-                                            boxShadow: "0 0 30px rgba(59, 130, 246, 0.6)",
-                                        }}
-                                        animate={{ 
-                                            scale: [1, 1.05, 1],
-                                            boxShadow: [
-                                                "0 0 0px rgba(59, 130, 246, 0)",
-                                                "0 0 20px rgba(59, 130, 246, 0.4)",
-                                                "0 0 0px rgba(59, 130, 246, 0)"
-                                            ]
-                                        }}
-                                        transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-                                    >
-                                        <motion.div
-                                            className="w-20 h-20 rounded-full bg-gradient-to-r from-blue-500 to-indigo-600 flex items-center justify-center shadow-lg group-hover:from-blue-600 group-hover:to-indigo-700 transition-all duration-300"
-                                            whileHover={{ scale: 1.1 }}
-                                            whileTap={{ scale: 0.9 }}
-                                        >
-                                            <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 text-white ml-1" viewBox="0 0 20 20" fill="currentColor">
-                                                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clipRule="evenodd" />
-                                            </svg>
-                                        </motion.div>
-                                    </motion.div>
-                                </div>
                             </div>
                         </div>
                         
