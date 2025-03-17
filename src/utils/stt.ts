@@ -23,7 +23,7 @@ export async function transcribeAudio(
       const response = await fetch('https://api.sarvam.ai/speech-to-text', {
         method: 'POST',
         headers: {
-          'api-subscription-key': '05ca5a88-9265-4e62-a25a-507687a900d3',
+          'api-subscription-key': '47b5a700-2f9e-4e1d-afe0-c46ed9cda77e',
         },
         body: formData,
       });

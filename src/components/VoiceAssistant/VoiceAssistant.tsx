@@ -534,7 +534,7 @@ export default function VoiceAssistant() {
         input: kannadaText,
         sourceLanguageCode: 'kn-IN',
         targetLanguageCode: 'en-IN'
-      }, '05ca5a88-9265-4e62-a25a-507687a900d3');
+      }, '47b5a700-2f9e-4e1d-afe0-c46ed9cda77e');
       
       const englishText = translationResult.translated_text;
       setTranslatedInput(englishText);
@@ -557,7 +557,7 @@ export default function VoiceAssistant() {
         input: englishResponse,
         sourceLanguageCode: 'en-IN',
         targetLanguageCode: 'kn-IN'
-      }, '05ca5a88-9265-4e62-a25a-507687a900d3');
+      }, '47b5a700-2f9e-4e1d-afe0-c46ed9cda77e');
       
       const kannadaResponse = backTranslationResult.translated_text;
       setTranslatedResponse(kannadaResponse);
